@@ -372,17 +372,11 @@ function! ref#system(args, ...)
     " By occasion of above, the command should be converted to fullpath.
     let args[0] = s:cmdpath(args[0])
     let q = '"'
-    let sp = '[<>^|&]'
-    let sp = exists('&sxe')  && &sxe == '' ?
-    \   sp :
-    \   join(filter(split('[<>|&]', '\zs'),
-    \   'v:val !~ "\\V\\%(' . escape(join(split(&sxe, '\zs'), '\\|'),
-    \   '"') . '\\)"'), '')
-    let cmd = join(map(args, 'q .' . (has('nvim') ?
-    \   ' v:val ' :
-    \   ' substitute(escape(v:val, q), "' . sp . '", "^\\0", "g") ') .
+    let cmd = join(map(args, 'q .' .
+    \   ((exists('&sxe') && &sxe != '') || has('nvim') ? ' v:val ' :
+    \   ' substitute(escape(v:val, q), "[<>^|&]", "^\\0", "g") ') .
     \   '. q'))
-    if (exists('&sxq') && &sxq == '') || has('nvim')
+    if !exists('&sxq') || &sxq == '' || has('nvim')
       let cmd = q . cmd . q
     endif
   else
